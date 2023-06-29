@@ -1,15 +1,61 @@
 <script setup>
 import { ref } from "vue";
 
+// States
 const showModal = ref(false);
+const showError = ref(false);
+const note = ref("");
+const notes = ref([]);
+
+// Get random Color
+function getRandomColor() {
+  var letters = "0123456789ABCDEF".split("");
+  var color = "#";
+  for (var i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+
+// Add Notes
+const addNotes = () => {
+  if (note.value.trim().length < 9) {
+    showError.value = true;
+    return;
+  }
+
+  notes.value.push({
+    text: note.value,
+    date: new Date().toLocaleString([], {
+      hour: "numeric",
+      minute: "numeric",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }),
+    bg: getRandomColor(),
+    id: Math.floor(Math.random() * 1000000),
+  });
+
+  note.value = "";
+  showModal.value = false;
+  showError.value = false;
+};
 </script>
 
 <template>
   <main>
     <div v-if="showModal" class="overlay">
       <div class="modal">
-        <textarea name="note" id="note" cols="30" rows="10"></textarea>
-        <button>Add Note</button>
+        <textarea
+          v-model="note"
+          name="note"
+          id="note"
+          cols="30"
+          rows="10"
+        ></textarea>
+        <p v-if="showError" class="error">Please add more than 10 characters</p>
+        <button @click="addNotes">Add Note</button>
         <button @click="showModal = false" class="close">Close</button>
       </div>
     </div>
@@ -19,19 +65,16 @@ const showModal = ref(false);
         <button @click="showModal = true">+</button>
       </header>
       <div class="cards-container">
-        <div class="card">
+        <div
+          v-for="note in notes"
+          class="card"
+          :style="{ backgroundColor: note.bg }"
+          :key="note.id"
+        >
           <p class="main-text">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Sapiente
-            quasi corporis amet perspiciatis, libero est!
+            {{ note.text }}
           </p>
-          <p class="date">04/27/6853</p>
-        </div>
-        <div class="card">
-          <p class="main-text">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Sapiente
-            quasi corporis amet perspiciatis, libero est!
-          </p>
-          <p class="date">04/27/6853</p>
+          <p class="date">{{ note.date }}</p>
         </div>
       </div>
     </div>
@@ -116,6 +159,7 @@ header button {
   position: relative;
   display: flex;
   flex-direction: column;
+  margin: 0 1rem;
 }
 
 .modal button {
@@ -132,5 +176,15 @@ header button {
 .modal .close {
   background-color: rgb(193, 15, 15);
   margin-top: 7px;
+}
+
+.error {
+  color: red;
+}
+
+@media screen and (max-width: 510px) {
+  .cards-container {
+    justify-content: center;
+  }
 }
 </style>
